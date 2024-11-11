@@ -4,8 +4,8 @@ from openpyxl.styles import Alignment
 #
 # 设置误差范围
 tolerance = 0.0030
-normal_df = pd.read_excel('data/normal-3.xlsx')
-cnacer_df = pd.read_excel('data/cnacer-3.xlsx')
+normal_df = pd.read_excel('data/normal.xlsx')
+cnacer_df = pd.read_excel('data/cnacer.xlsx')
 
 # 提取第一列 m/z 数据
 normal_mz = normal_df.iloc[:, 0]
