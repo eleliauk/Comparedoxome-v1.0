@@ -1,88 +1,90 @@
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment
-#
-# 设置误差范围
+
+# Set error tolerance range
 tolerance = 0.0030
+
+# Load data
 normal_df = pd.read_excel('data/normal.xlsx')
-cnacer_df = pd.read_excel('data/cnacer.xlsx')
+cancer_df = pd.read_excel('data/cancer.xlsx')
 
-# 提取第一列 m/z 数据
+# Extract the m/z data from the first column
 normal_mz = normal_df.iloc[:, 0]
-cnacer_mz = cnacer_df.iloc[:, 0]
+cancer_mz = cancer_df.iloc[:, 0]
 
-# 取第一行作为列名
+# Get column names
 normal_cols = normal_df.columns.tolist()
-cnacer_cols = cnacer_df.columns.tolist()
+cancer_cols = cancer_df.columns.tolist()
 
-# 初始化结果列表
+# Initialize result lists
 matched_rows = []
 remaining_normal = []
-remaining_cnacer = []
+remaining_cancer = []
 
-# 找到匹配项
+# Find matched items
 for i, mz_normal in normal_mz.items():
     found_match = False
-    for j, mz_cnacer in cnacer_mz.items():
-        if abs(mz_normal - mz_cnacer) <= tolerance:
-            # 将 normal 和 cnacer 的数据合并在一起
-            combined_row = pd.concat([normal_df.iloc[i], cnacer_df.iloc[j]], ignore_index=True)
-            combined_row = combined_row.rename(lambda x: f"C{x}")  # 暂时使用 C0、C1 等命名列
-            combined_row['m/z'] = mz_normal  # 添加 m/z 列方便分组
+    for j, mz_cancer in cancer_mz.items():
+        if abs(mz_normal - mz_cancer) <= tolerance:
+            # Combine the data of normal and cancer
+            combined_row = pd.concat([normal_df.iloc[i], cancer_df.iloc[j]], ignore_index=True)
+            combined_row = combined_row.rename(lambda x: f"C{x}")  # Temporarily name columns as C0, C1, etc.
+            combined_row['m/z'] = mz_normal  # Add m/z column for grouping
             matched_rows.append(combined_row)
             found_match = True
             break
     if not found_match:
-        # 如果没有匹配项，加入到 remaining_normal 中
+        # If no match, add to remaining_normal
         remaining_normal.append(normal_df.iloc[i])
 
-# 查找剩余的 cnacer 项
-for j, mz_cnacer in cnacer_mz.items():
-    if not any(abs(mz_cnacer - mz_normal) <= tolerance for mz_normal in normal_mz):
-        remaining_cnacer.append(cnacer_df.iloc[j])
+# Find remaining cancer items
+for j, mz_cancer in cancer_mz.items():
+    if not any(abs(mz_cancer - mz_normal) <= tolerance for mz_normal in normal_mz):
+        remaining_cancer.append(cancer_df.iloc[j])
 
-# 创建 DataFrame 并设置合适的列名
+# Create DataFrame and set appropriate column names
 if matched_rows:
     matched_df = pd.DataFrame(matched_rows)
-    matched_df.sort_values(by='m/z', inplace=True)  # 按 m/z 排序
+    matched_df.sort_values(by='m/z', inplace=True)  # Sort by m/z 
 
-    # 使用 normal 和 cnacer 的列名
-    column_names = normal_cols + cnacer_cols
-    matched_df.columns = column_names + ["m/z"]  # 添加 "m/z" 列用于后续操作
+    # Use the column names from normal and cancer data
+    column_names = normal_cols + cancer_cols
+    matched_df.columns = column_names + ["m/z"]  # Add "m/z" column for following operations
 
-    # 删除最后的 "m/z" 列
+    # Delete the last "m/z" column
     matched_df.drop(columns=["m/z"], inplace=True)
 
-# 将结果写入 Excel 文件
-with pd.ExcelWriter('data/matched.xlsx', engine='openpyxl') as writer:
+# Write results to Excel file
+with pd.ExcelWriter('data/common.xlsx', engine='openpyxl') as writer:
     if not matched_df.empty:
-        matched_df.to_excel(writer, index=False, sheet_name='Matched')
+        matched_df.to_excel(writer, index=False, sheet_name='Common')
     else:
-        pd.DataFrame().to_excel(writer, index=False, sheet_name='Matched')  # 空文件
+        pd.DataFrame().to_excel(writer, index=False, sheet_name='Common')  # Empty file
 
-# 加载已保存的文件以进行单元格合并
-wb = load_workbook('data/matched.xlsx')
-ws = wb['Matched']
+# Load saved file to merge cells
+wb = load_workbook('data/common.xlsx')
+ws = wb['Common']
 
-# 合并相同 m/z 值的单元格
+# Merge cells with the same m/z
 for row in range(2, ws.max_row + 1):
     if ws[f'A{row}'].value == ws[f'A{row - 1}'].value:
         ws.merge_cells(f'A{row - 1}:A{row}')
         ws[f'A{row - 1}'].alignment = Alignment(horizontal="center", vertical="center")
 
-wb.save('data/matched.xlsx')
+wb.save('data/common.xlsx')
 
-# 生成 remaining 文件
-with pd.ExcelWriter('data/remaining_normal.xlsx') as writer:
+# Generate remaining files
+with pd.ExcelWriter('data/normal_only.xlsx') as writer:
     if remaining_normal:
-        pd.DataFrame(remaining_normal).to_excel(writer, index=False, sheet_name='Remaining_Normal')
+        pd.DataFrame(remaining_normal).to_excel(writer, index=False, sheet_name='Normal_Only')
     else:
-        pd.DataFrame().to_excel(writer, index=False, sheet_name='Remaining_Normal')  # 空文件
+        pd.DataFrame().to_excel(writer, index=False, sheet_name='Normal_Only')  # Empty file
 
-with pd.ExcelWriter('data/remaining_cnacer.xlsx') as writer:
-    if remaining_cnacer:
-        pd.DataFrame(remaining_cnacer).to_excel(writer, index=False, sheet_name='Remaining_Cnacer')
+with pd.ExcelWriter('data/cancer_only.xlsx') as writer:
+    if remaining_cancer:
+        pd.DataFrame(remaining_cancer).to_excel(writer, index=False, sheet_name='Cancer_Only')
     else:
-        pd.DataFrame().to_excel(writer, index=False, sheet_name='Remaining_Cnacer')  # 空文件
+        pd.DataFrame().to_excel(writer, index=False, sheet_name='Cancer_Only')  # Empty file
 
-print("文件对比完成。生成的文件分别为 matched.xlsx、remaining_normal.xlsx、remaining_cnacer.xlsx")
+print("Comparison file generation complete. Generated files include common.xlsx, normal_only.xlsx, and cancer_only.xlsx.")
