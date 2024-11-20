@@ -1,68 +1,155 @@
 
 
-## 概述
-该脚本用于比较两个 Excel 文件中的 m/z 数据，基于指定的误差范围 tolerance 来查找匹配的行。最终，生成三个输出文件：
-	1.	matched.xlsx：包含匹配的 normal 和 cnacer 数据。
-	2.	remaining_normal.xlsx：包含 normal 文件中未找到匹配项的数据。
-	3.	remaining_cnacer.xlsx：包含 cnacer 文件中未找到匹配项的数据。
+# Comparedoxome
 
-## 文件结构
+## **Overview**
 
-	•	输入文件：
-	•	normal.xlsx：包含 normal 数据的 Excel 文件，第一列为 m/z 数据。
-	•	cnacer.xlsx：包含 cnacer 数据的 Excel 文件，第一列为 m/z 数据。
-	•	输出文件：
-	•	matched.xlsx：匹配的 normal 和 cnacer 数据依次排列。
-	•	remaining_normal.xlsx：normal 中无匹配的行。
-	•	remaining_cnacer.xlsx：cnacer 中无匹配的行。
+This script compares the m/z data from two Excel files (normal.xlsx and cancer.xlsx) based on a specified error tolerance (tolerance). The output includes three Excel files:
 
-## 参数说明
+​	1.	matched.xlsx: Contains matched rows from both normal and cancer data.
 
-	•	tolerance匹配误差范围。如果两个文件中 m/z 值的差绝对值小于或等于该值，则认为该行匹配。
+​	2.	remaining_normal.xlsx: Contains rows in normal data that have no matches.
 
-## 环境依赖
+​	3.	remaining_cancer.xlsx: Contains rows in cancer data that have no matches.
+
+## **File Structure**
+
+**Input Files**
+
+​	•	normal.xlsx: Contains the normal data with m/z values in the first column.
+
+​	•	cancer.xlsx: Contains the cancer data with m/z values in the first column.
+
+**Output Files**
+
+​	•	matched.xlsx: Matched rows from normal and cancer files, sorted by m/z.
+
+​	•	remaining_normal.xlsx: Rows in normal that do not have matches.
+
+​	•	remaining_cancer.xlsx: Rows in cancer that do not have matches.
+
+
+
+**Parameters**
+
+
+
+​	•	tolerance: The error range for matching m/z values. If the absolute difference between two m/z values is less than or equal to this value, they are considered a match.
+
+
+
+## **Dependencies**
+
+
+
+Ensure you have the required Python libraries installed:
+
 
 ```shell
-pip install -r requirements.txt
+pip install pandas openpyxl
 ```
 
-## 使用步骤
 
-	1.	将 normal.xlsx 和 cnacer.xlsx 放置在 data 文件夹中。
-	2.	在脚本中调整 tolerance 值（如果需要）。
-	3.	运行脚本：
+## **Usage Steps**
+
+
+
+​	1.	Place the input files (normal.xlsx and cancer.xlsx) in the data folder.
+
+​	2.	Adjust the tolerance value in the script if needed.
+
+​	3.	Run the script:
+
+
 ```shell
 python main.py
 ```
 
 
+​	4.	After execution, the output files will be generated in the data folder:
 
-	4.	脚本运行后，将在 data 文件夹中生成三个输出文件：matched.xlsx、remaining_normal.xlsx、remaining_cnacer.xlsx。
+​	•	matched.xlsx
 
-输出文件结构
+​	•	remaining_normal.xlsx
 
-	•	matched.xlsx：包含 normal 和 cnacer 数据的匹配行。在匹配的每一对数据行中，normal 的列名前缀为 normal_，cnacer 的列名前缀为 cnacer_。
-	•	remaining_normal.xlsx：列出 normal-3.xlsx 中未找到匹配的 m/z 数据。
-	•	remaining_cnacer.xlsx：列出 cnacer-3.xlsx 中未找到匹配的 m/z 数据。
+​	•	remaining_cancer.xlsx
 
-## 注意事项
 
-	•	输出的匹配文件将根据误差范围查找匹配行，因此误差范围越小，匹配项越少，反之亦然。
-	•	如果没有匹配项或没有剩余项，输出的 Excel 文件将生成空表单。
 
-## 示例输出
+**Output File Structure**
 
-文件对比完成。生成的文件分别为 matched.xlsx、remaining_normal.xlsx、remaining_cnacer.xlsx
 
-代码结构说明
 
-	•	数据读取：读取 normal-3.xlsx 和 cnacer-3.xlsx，提取第一列 m/z 数据。
-	•	匹配查找：逐一对比 normal 和 cnacer 中的 m/z 值，找到误差范围内的匹配项。
-	•	结果存储：将匹配项存储到 matched.xlsx，未匹配的 normal 和 cnacer 数据分别存储到 remaining_normal.xlsx 和 remaining_cnacer.xlsx。
+**matched.xlsx**
 
-常见问题
 
-	1.	没有生成文件：检查 data 文件夹是否存在输入文件。
-	2.	匹配结果为空：可能 tolerance 误差范围太小，尝试增大该值。
 
-通过此脚本，您可以高效地比对两个 Excel 文件中的数值，尤其适用于需要匹配误差范围内的研究数据对比。
+​	•	Contains matched rows from normal and cancer.
+
+​	•	Each row combines data from both files. Column names are prefixed with normal_ and cancer_ for clarity.
+
+
+
+**remaining_normal.xlsx**
+
+
+
+​	•	Lists rows from normal.xlsx that do not match any rows in cancer.xlsx.
+
+
+
+**remaining_cancer.xlsx**
+
+
+
+​	•	Lists rows from cancer.xlsx that do not match any rows in normal.xlsx.
+
+
+
+**Notes**
+
+
+
+​	1.	**Error Tolerance**: The matching process depends on the tolerance parameter. A smaller value results in fewer matches, while a larger value increases the match count. Adjust as needed.
+
+​	2.	**Empty Sheets**: If no matches or no unmatched rows exist, the corresponding Excel file will contain an empty sheet.
+
+
+
+**Example Output**
+
+
+
+After running the script, you will see the following files in the data folder:
+
+​	•	matched.xlsx: Matched rows with combined data from both files.
+
+​	•	remaining_normal.xlsx: Rows in normal.xlsx without matches.
+
+​	•	remaining_cancer.xlsx: Rows in cancer.xlsx without matches.
+
+
+
+**Script Workflow**
+
+
+
+​	1.	**Data Loading**: Reads the normal.xlsx and cancer.xlsx files and extracts the m/z values.
+
+​	2.	**Matching Process**: Iterates through m/z values to find matches within the tolerance range.
+
+​	3.	**Output Generation**: Saves matched rows and unmatched rows to their respective Excel files.
+
+
+
+**Common Issues**
+
+
+
+​	1.	**No Output Files**: Ensure the data folder contains the input files (normal.xlsx and cancer.xlsx).
+
+​	2.	**Empty Match Results**: Try increasing the tolerance value if no matches are found.
+
+
+
+This script simplifies the comparison of research data, particularly when working with values requiring error-tolerance-based matching.
